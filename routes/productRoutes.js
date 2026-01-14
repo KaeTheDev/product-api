@@ -55,3 +55,24 @@ router.post("/", async (req, res) => {
       });
     }
   });
+
+  // Delete a product
+  router.delete("/:id", async (req, res) => {
+    try {
+      const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+  
+      if (!deletedProduct) {
+        return res.status(404).json({
+          message: "Product not found",
+        });
+      }
+  
+      res.json({
+        message: "Product deleted successfully",
+      });
+    } catch (error) {
+      res.status(400).json({
+        error: "Invalid product ID",
+      });
+    }
+  });  
