@@ -1,4 +1,4 @@
-const express = require('exprress');
+const express = require('express');
 const Product = require('../models/Product');
 const router = express.Router();
 
@@ -76,3 +76,55 @@ router.post("/", async (req, res) => {
       });
     }
   });  
+
+// Read all products with filtering, sorting, and pagination
+
+router.get("/", async (req, res) => {
+    try {
+      const {
+        category,
+        minPrice,
+        maxPrice,
+        sortBy,
+        page = 1,
+        limit = 10,
+      } = req.query;
+  
+      const query = {};
+  
+      // Filter by category
+      if (category) {
+        query.category = category;
+      }
+  
+      // Filter by price range
+      if (minPrice || maxPrice) {
+        query.price = {};
+        if (minPrice) query.price.$gte = Number(minPrice);
+        if (maxPrice) query.price.$lte = Number(maxPrice);
+      }
+  
+      // Sorting logic
+      let sortOptions = {};
+      if (sortBy === "price_asc") {
+        sortOptions.price = 1;
+      } else if (sortBy === "price_desc") {
+        sortOptions.price = -1;
+      }
+  
+      const skip = (Number(page) - 1) * Number(limit);
+  
+      const products = await Product.find(query)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(Number(limit));
+  
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({
+        error: error.message,
+      });
+    }
+  });
+  
+  module.exports = router;
